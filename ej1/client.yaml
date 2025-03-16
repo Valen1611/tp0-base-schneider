@@ -4,7 +4,6 @@
     entrypoint: /CLIENT_NAME
     environment:
       - CLI_ID=CLIENT_NUM
-      - CLI_LOG_LEVEL=DEBUG
     networks:
       - testing_net
     depends_on:
