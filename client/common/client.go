@@ -7,6 +7,10 @@ import (
 	"time"
 
 	"github.com/op/go-logging"
+	
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var log = logging.MustGetLogger("log")
@@ -31,6 +35,7 @@ func NewClient(config ClientConfig) *Client {
 	client := &Client{
 		config: config,
 	}
+	go signal_handler()
 	return client
 }
 
@@ -90,4 +95,12 @@ func (c *Client) StartClientLoop() {
 
 	}
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+}
+
+func signal_handler() {
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+    c := <-quit
+    fmt.Println("Closing client", c)
+	os.Exit(0)
 }
