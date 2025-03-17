@@ -5,7 +5,6 @@ RUTA_HEADER = "ej1/header.yaml"
 RUTA_SERVER = "ej1/server.yaml"
 RUTA_CLIENT = "ej1/client.yaml"
 RUTA_NETWORK = "ej1/network.yaml"
-RUTA_EJ3_PING = "ej1/ej3.yaml"
 
 SERVER_NAME = "server"
 CLIENT_NAME = "client"
@@ -26,23 +25,18 @@ def get_file_content():
     with open(RUTA_NETWORK, "r") as archivo:
         networks = archivo.read()
     
-    with open(RUTA_EJ3_PING, "r") as archivo:
-        ej3_ping = archivo.read()
-    
-    return header, server, client, networks, ej3_ping
+    return header, server, client, networks
 
-def generate_yaml(header, server, client, networks, ej3_ping, ruta_archivo_salida, cant_clientes):
+def generate_yaml(header, server, client, networks, ruta_archivo_salida, cant_clientes):
     with open(ruta_archivo_salida, "w") as archivo:
         archivo.write(header)
         archivo.write(f"{server}\n")
         for i in range(1, int(cant_clientes)+1):
             client_i = client.replace("CLIENT_NUM", f"{i}")
             archivo.write(f"{client_i}\n")
-        archivo.write(ej3_ping)
         archivo.write(networks)
 
 def main():
-    
     # Argumentos de la terminal
     args = sys.argv[1:]
     if len(args) != 2:
@@ -52,10 +46,10 @@ def main():
     cant_clientes = args[1]
 
     # Levanto los archivos que tienen la estructura del output
-    header, server, client, networks, ej3_ping = get_file_content()
+    header, server, client, networks = get_file_content()
 
     # Guardo el yaml el output
-    generate_yaml(header, server, client, networks, ej3_ping, ruta_archivo_salida, cant_clientes)
+    generate_yaml(header, server, client, networks, ruta_archivo_salida, cant_clientes)
     print(f"Archivo {ruta_archivo_salida} generado con exito")
 
 if __name__ == "__main__":
