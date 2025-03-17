@@ -9,7 +9,7 @@ docker run --rm --network tp0_testing_net \
     -e msg="$msg" \
     alpine:latest /bin/sh -c '
     apk add --no-cache netcat-openbsd && \
-    response=$(echo $msg | nc server $server_port) && \
+    response=$(echo $msg | nc -w 3 server $server_port) && \
         if [ "$response" == "$msg" ]; then
         echo "action: test_echo_server | result: success"
     else
