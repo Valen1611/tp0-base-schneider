@@ -45,6 +45,8 @@ func (c *Client) createClientSocket() error {
 			c.config.ID,
 			err,
 		)
+		log.Critical("Closing socket")
+		conn.Close() // Cierro socket si fallo
 	}
 	c.conn = conn
 	return nil
@@ -73,6 +75,8 @@ func (c *Client) StartClientLoop() {
 				c.config.ID,
 				err,
 			)
+			log.Critical("Closing socket")
+			c.conn.Close()
 			return
 		}
 
