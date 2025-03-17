@@ -1,8 +1,0 @@
-  ej3:
-    container_name: ej3
-    image: ej3:latest
-    entrypoint: /ej3
-    networks:
-      - testing_net
-    depends_on:
-      - server
