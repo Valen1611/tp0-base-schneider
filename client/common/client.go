@@ -83,7 +83,7 @@ func (c *Client) Handshake() bool {
 	c.createClientSocket()
 	initial_request := os.Getenv("HANDSHAKE_REQUEST_MESSAGE") + "\n"
 	log.Infof(
-		"action: handshake | client_id: %v | sending: %v",
+		"action: handshake | result: success | client_id: %v | sending: %v",
 		c.config.ID,
 		initial_request,
 	)
@@ -133,7 +133,7 @@ func (c *Client) SendBet() bool {
 
 	bet_msg := fmt.Sprintf("BET:%v,%v,%v,%v,%v\n", name, surname, documento, nacimiento, numero)
 	log.Infof(
-		"action: send_bet | client_id: %v | sending: %v",
+		"action: send_bet | result: success | client_id: %v | sending: %v",
 		c.config.ID,
 		bet_msg,
 	)

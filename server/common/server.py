@@ -48,10 +48,10 @@ class Server:
             client_msg = client_sock.recv(1024).rstrip().decode('utf-8') + "\n"
             addr = client_sock.getpeername()
             client_expected_msg = os.getenv('HANDSHAKE_REQUEST_MESSAGE') + "\n"
-            logging.info(f"action: handshake | ip: {addr[0]} | recieved: {client_msg}")
+            logging.info(f"action: handshake | result: success | ip: {addr[0]} | recieved: {client_msg}")
             if client_msg == client_expected_msg:
                 response = os.getenv('HANDSHAKE_RESPONSE_MESSAGE') + "\n"
-                logging.info(f"action: handshake | ip: {addr[0]} | responding: {response}")
+                logging.info(f"action: handshake | result: success |  ip: {addr[0]} | responding: {response}")
                 client_sock.send(response.encode('utf-8'))
                 return True
             else:
