@@ -4,6 +4,8 @@
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - HANDSHAKE_REQUEST_MESSAGE=HELLO_SERVER
+      - HANDSHAKE_RESPONSE_MESSAGE=HELLO_CLIENT
     networks:
       - testing_net
     volumes:

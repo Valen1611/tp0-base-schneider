@@ -37,3 +37,28 @@ docker-compose-down:
 docker-compose-logs:
 	docker compose -f docker-compose-dev.yaml logs -f
 .PHONY: docker-compose-logs
+
+
+# Para modificar el codigo y verlo mas rapido
+reboot-client:
+	docker rm client1 --force
+	docker image remove client:latest
+	docker build -f ./client/Dockerfile -t "client:latest" .
+	docker compose -f docker-compose-dev.yaml up --build client1
+.PHONY: reboot-client
+
+reboot-server:
+	docker rm server --force
+	docker image remove server:latest
+	docker build -f ./server/Dockerfile -t "server:latest" .
+	docker compose -f docker-compose-dev.yaml up --build server
+.PHONY: reboot-server
+
+quick-run-client:
+	docker compose -f docker-compose-dev.yaml up client1
+.PHONY: quick-run-client
+
+quick-run-server:
+	docker compose -f docker-compose-dev.yaml up server
+.PHONY: quick-run-server
+	

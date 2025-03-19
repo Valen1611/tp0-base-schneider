@@ -6,6 +6,8 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - HANDSHAKE_REQUEST_MESSAGE=HELLO_SERVER
+      - HANDSHAKE_RESPONSE_MESSAGE=HELLO_CLIENT
     networks:
       - testing_net
     volumes:
@@ -17,6 +19,13 @@ services:
     entrypoint: /client
     environment:
       - CLI_ID=1
+      - NOMBRE=Santiago Lionel
+      - APELLIDO=Lorca
+      - DOCUMENTO=30904465
+      - NACIMIENTO=1999-03-17
+      - NUMERO=7574
+      - HANDSHAKE_REQUEST_MESSAGE=HELLO_SERVER
+      - HANDSHAKE_RESPONSE_MESSAGE=HELLO_CLIENT
     networks:
       - testing_net
     depends_on:

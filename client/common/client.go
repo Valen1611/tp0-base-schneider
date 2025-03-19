@@ -57,10 +57,127 @@ func (c *Client) createClientSocket() error {
 	return nil
 }
 
+func writer(conn net.Conn, msg string) error {
+	totalWritten := 0
+    msgBytes := []byte(msg)
+
+    for totalWritten < len(msgBytes) {
+        n, err := conn.Write(msgBytes[totalWritten:])
+        if err != nil {
+            return err
+        }
+        totalWritten += n
+    }
+    return nil
+}
+
+func reader(conn net.Conn) (string, error) {
+	msg, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	return msg, nil
+}
+
+func (c *Client) Handshake() bool {
+	c.createClientSocket()
+	initial_request := os.Getenv("HANDSHAKE_REQUEST_MESSAGE") + "\n"
+	log.Infof(
+		"action: handshake | client_id: %v | sending: %v",
+		c.config.ID,
+		initial_request,
+	)
+	writer(c.conn, initial_request)
+	log.Infof("waiting server response")
+	response, error := reader(c.conn)
+	log.Infof("response from server: %v", response)
+	if error != nil {
+		log.Criticalf(
+			"action: handshake | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			error,
+		)
+		log.Critical("Closing socket")
+		c.conn.Close()
+		return false
+	}
+
+	expexted_response := os.Getenv("HANDSHAKE_RESPONSE_MESSAGE") + "\n"
+	fmt.Println("response from server:")
+	fmt.Println(initial_request) 
+	if response != expexted_response {
+		log.Criticalf(
+			"action: handshake | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			"Server response should be Hello Client but got " + response,
+		)
+		log.Critical("Closing socket")
+		c.conn.Close()
+		return false
+	}
+
+	log.Infof(
+		"action: handshake | result: success | client_id: %v | recieved: %v",
+		c.config.ID,
+		response,
+	)
+	return true
+}
+
+func (c *Client) SendBet() bool {
+	name := os.Getenv("NOMBRE")
+	surname := os.Getenv("APELLIDO")
+	documento := os.Getenv("DOCUMENTO")
+	nacimiento := os.Getenv("NACIMIENTO")
+	numero := os.Getenv("NUMERO")
+	print("Nombre: ", name, "\n")
+	print("Apellido: ", surname, "\n")
+	print("Documento: ", documento, "\n")
+	print("Nacimiento: ", nacimiento, "\n")
+	print("Numero: ", numero, "\n")
+	writer(c.conn, name)
+	writer(c.conn, surname)
+	writer(c.conn, documento)
+	writer(c.conn, nacimiento)
+	writer(c.conn, numero)
+	return true
+}
+
+
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
+	
+
+	for true {
+		c.createClientSocket()
+		name := os.Getenv("NOMBRE")
+		fmt.Fprintf(
+			c.conn,
+			"[CLIENT %v] Nombre: %v\n",
+			c.config.ID,
+			name,
+		)
+		msg, err := bufio.NewReader(c.conn).ReadString('\n')
+		c.conn.Close()
+		if err != nil {
+			log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
+				c.config.ID,
+				err,
+			)
+			log.Critical("Closing socket")
+			c.conn.Close()
+			return
+		}
+	
+		log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
+			c.config.ID,
+			msg,
+		)
+		break
+	}
+
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
 		// Create the connection the server in every loop iteration. Send an
 		c.createClientSocket()

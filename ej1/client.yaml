@@ -4,6 +4,13 @@
     entrypoint: /CLIENT_NAME
     environment:
       - CLI_ID=CLIENT_NUM
+      - NOMBRE=NOMBRE
+      - APELLIDO=APELLIDO
+      - DOCUMENTO=DOCUMENTO
+      - NACIMIENTO=NACIMIENTO
+      - NUMERO=NUMERO
+      - HANDSHAKE_REQUEST_MESSAGE=HELLO_SERVER
+      - HANDSHAKE_RESPONSE_MESSAGE=HELLO_CLIENT
     networks:
       - testing_net
     depends_on:
