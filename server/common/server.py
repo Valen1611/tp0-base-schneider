@@ -1,9 +1,13 @@
+import datetime
 import os
 import socket
 import logging
 
 import signal
 import sys
+
+from common.utils import Bet
+from common import utils
 
 class Server:
     def __init__(self, port, listen_backlog):
@@ -75,7 +79,22 @@ class Server:
             addr = client_sock.getpeername()
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
             # TODO: Modify the send to avoid short-writes
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
+            # client_sock.send("{}\n".format(msg).encode('utf-8'))
+            print("Mensaje recibido: ", msg)
+            action = msg.split(":")[0]
+            if action == "BET":
+                bet_data = msg.split(":")[1].split(",")
+                name = bet_data[0]
+                surname = bet_data[1]
+                document = bet_data[2]
+                birthdate = bet_data[3]
+                number = int(bet_data[4])
+                bet = Bet(agency=1, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)
+                print(bet.first_name)
+                utils.store_bets([bet])
+                print("Bet: ", bet)
+                logging.info(f'action: apuesta_almacenada | result: success | dni: ${document} | numero: ${number}.')
+                client_sock.send("bet stored".encode('utf-8'))
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:

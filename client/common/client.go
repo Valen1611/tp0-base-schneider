@@ -130,16 +130,23 @@ func (c *Client) SendBet() bool {
 	documento := os.Getenv("DOCUMENTO")
 	nacimiento := os.Getenv("NACIMIENTO")
 	numero := os.Getenv("NUMERO")
-	print("Nombre: ", name, "\n")
-	print("Apellido: ", surname, "\n")
-	print("Documento: ", documento, "\n")
-	print("Nacimiento: ", nacimiento, "\n")
-	print("Numero: ", numero, "\n")
-	writer(c.conn, name)
-	writer(c.conn, surname)
-	writer(c.conn, documento)
-	writer(c.conn, nacimiento)
-	writer(c.conn, numero)
+
+	bet_msg := fmt.Sprintf("BET:%v,%v,%v,%v,%v\n", name, surname, documento, nacimiento, numero)
+	log.Infof(
+		"action: send_bet | client_id: %v | sending: %v",
+		c.config.ID,
+		bet_msg,
+	)
+	writer(c.conn, bet_msg)
+	log.Infof("waiting server response")
+	response, error := reader(c.conn)
+	log.Infof("response from server: %v", response)
+
+	log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
+			documento,
+			numero,
+		)
+
 	return true
 }
 
