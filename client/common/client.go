@@ -82,21 +82,21 @@ func reader(conn net.Conn) (string, error) {
 func (c *Client) Handshake() bool {
 	c.createClientSocket()
 	initial_request := os.Getenv("HANDSHAKE_REQUEST_MESSAGE") + "\n"
-	log.Infof(
-		"action: handshake | result: success | client_id: %v | sending: %v",
-		c.config.ID,
-		initial_request,
-	)
+	// log.Infof(
+	// 	"action: handshake | result: success | client_id: %v | sending: %v",
+	// 	c.config.ID,
+	// 	initial_request,
+	// )
 	writer(c.conn, initial_request)
 	log.Infof("waiting server response")
 	response, error := reader(c.conn)
 	log.Infof("response from server: %v", response)
 	if error != nil {
-		log.Criticalf(
-			"action: handshake | result: fail | client_id: %v | error: %v",
-			c.config.ID,
-			error,
-		)
+		// log.Criticalf(
+		// 	"action: handshake | result: fail | client_id: %v | error: %v",
+		// 	c.config.ID,
+		// 	error,
+		// )
 		log.Critical("Closing socket")
 		c.conn.Close()
 		return false
@@ -106,21 +106,21 @@ func (c *Client) Handshake() bool {
 	fmt.Println("response from server:")
 	fmt.Println(initial_request) 
 	if response != expexted_response {
-		log.Criticalf(
-			"action: handshake | result: fail | client_id: %v | error: %v",
-			c.config.ID,
-			"Server response should be Hello Client but got " + response,
-		)
+		// log.Criticalf(
+		// 	"action: handshake | result: fail | client_id: %v | error: %v",
+		// 	c.config.ID,
+		// 	"Server response should be Hello Client but got " + response,
+		// )
 		log.Critical("Closing socket")
 		c.conn.Close()
 		return false
 	}
 
-	log.Infof(
-		"action: handshake | result: success | client_id: %v | recieved: %v",
-		c.config.ID,
-		response,
-	)
+	// log.Infof(
+	// 	"action: handshake | result: success | client_id: %v | recieved: %v",
+	// 	c.config.ID,
+	// 	response,
+	// )
 	return true
 }
 
