@@ -54,8 +54,8 @@ class Server:
             action = protocol.get_action(msg)
             if action == "BET":
                 # Leo la data de la apuesta
-                name, surname, document, birthdate, number = protocol.read_bet_msg(msg)                
-                bet = Bet(agency=1, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)
+                agency, name, surname, document, birthdate, number = protocol.read_bet_msg(msg)                
+                bet = Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)
                 # Guardo la apuesta
                 utils.store_bets([bet])            
                 logging.info(f'action: apuesta_almacenada | result: success | dni: {document} | numero: {number}.')

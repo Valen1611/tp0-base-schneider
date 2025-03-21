@@ -111,13 +111,6 @@ func main() {
 	}
 
 	client := common.NewClient(clientConfig)
-	
-	// handshake
-	if client.Handshake() == false {
-		log.Critical("Handshake failed")
-		return
-	}
-	log.Info("Handshake success")
 	send_bet := client.SendBet()
 	if send_bet == false {
 		log.Critical("Send bet failed")

@@ -68,6 +68,7 @@ func writer(conn net.Conn, msg string) error {
         }
         totalWritten += n
     }
+	conn.Write([]byte("\n"))
     return nil
 }
 
@@ -79,66 +80,21 @@ func reader(conn net.Conn) (string, error) {
 	return msg, nil
 }
 
-func (c *Client) Handshake() bool {
-	c.createClientSocket()
-	initial_request := os.Getenv("HANDSHAKE_REQUEST_MESSAGE") + "\n"
-	// log.Infof(
-	// 	"action: handshake | result: success | client_id: %v | sending: %v",
-	// 	c.config.ID,
-	// 	initial_request,
-	// )
-	writer(c.conn, initial_request)
-	log.Infof("waiting server response")
-	response, error := reader(c.conn)
-	log.Infof("response from server: %v", response)
-	if error != nil {
-		// log.Criticalf(
-		// 	"action: handshake | result: fail | client_id: %v | error: %v",
-		// 	c.config.ID,
-		// 	error,
-		// )
-		log.Critical("Closing socket")
-		c.conn.Close()
-		return false
-	}
-
-	expexted_response := os.Getenv("HANDSHAKE_RESPONSE_MESSAGE") + "\n"
-	fmt.Println("response from server:")
-	fmt.Println(initial_request) 
-	if response != expexted_response {
-		// log.Criticalf(
-		// 	"action: handshake | result: fail | client_id: %v | error: %v",
-		// 	c.config.ID,
-		// 	"Server response should be Hello Client but got " + response,
-		// )
-		log.Critical("Closing socket")
-		c.conn.Close()
-		return false
-	}
-
-	// log.Infof(
-	// 	"action: handshake | result: success | client_id: %v | recieved: %v",
-	// 	c.config.ID,
-	// 	response,
-	// )
-	return true
-}
-
 func (c *Client) SendBet() bool {
+	// Levanto las variables de entorno
 	name := os.Getenv("NOMBRE")
 	surname := os.Getenv("APELLIDO")
 	documento := os.Getenv("DOCUMENTO")
 	nacimiento := os.Getenv("NACIMIENTO")
 	numero := os.Getenv("NUMERO")
 
-	bet_msg := fmt.Sprintf("BET:%v,%v,%v,%v,%v\n", name, surname, documento, nacimiento, numero)
-	log.Infof(
-		"action: send_bet | result: success | client_id: %v | sending: %v",
-		c.config.ID,
-		bet_msg,
-	)
+	agency := c.config.ID
+
+	log.Infof("action: send_bet | result: success | client_id: %v | sending: %v", c.config.ID,bet_msg)
+	// Envio la apuesta al server
 	writer(c.conn, bet_msg)
-	log.Infof("waiting server response")
+
+	// Espero confirmacion
 	response, error := reader(c.conn)
 	if error != nil {
 		log.Criticalf(
@@ -150,7 +106,16 @@ func (c *Client) SendBet() bool {
 		c.conn.Close()
 		return false
 	}
-	log.Infof("response from server: %v", response)
+	if response != "OK" {
+		log.Criticalf(
+			"action: send_bet | result: fail | client_id: %v | response: %v",
+			c.config.ID,
+			response,
+		)
+		log.Critical("Closing socket")
+		c.conn.Close()
+		return false
+	}
 
 	log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
 			documento,
