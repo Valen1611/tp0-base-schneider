@@ -8,7 +8,7 @@ import sys
 
 from common.utils import Bet
 from common import utils
-from server.common import protocol, socket_wrapper
+from common import protocol, socket_wrapper
 
 class Server:
     def __init__(self, port, listen_backlog):

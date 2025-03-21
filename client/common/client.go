@@ -59,7 +59,8 @@ func (c *Client) createClientSocket() error {
 
 func writer(conn net.Conn, msg string) error {
 	totalWritten := 0
-    msgBytes := []byte(msg)
+	msg += "\n" 
+    msgBytes := []byte(msg) 
 
     for totalWritten < len(msgBytes) {
         n, err := conn.Write(msgBytes[totalWritten:])
@@ -68,7 +69,7 @@ func writer(conn net.Conn, msg string) error {
         }
         totalWritten += n
     }
-	conn.Write([]byte("\n"))
+
     return nil
 }
 
@@ -77,6 +78,7 @@ func reader(conn net.Conn) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Print(msg)
 	return msg, nil
 }
 
@@ -87,14 +89,14 @@ func (c *Client) SendBet() bool {
 	documento := os.Getenv("DOCUMENTO")
 	nacimiento := os.Getenv("NACIMIENTO")
 	numero := os.Getenv("NUMERO")
-
 	agency := c.config.ID
-
+	
 	// Creo el mensaje de apuesta
 	bet_msg := GenerateBetMessage(agency, name, surname, documento, nacimiento, numero)
-
 	log.Infof("action: send_bet | result: success | client_id: %v | sending: %v", c.config.ID, bet_msg)
+	
 	// Envio la apuesta al server
+	c.createClientSocket()
 	writer(c.conn, bet_msg)
 
 	// Espero confirmacion
@@ -109,7 +111,7 @@ func (c *Client) SendBet() bool {
 		c.conn.Close()
 		return false
 	}
-	if response != "OK" {
+	if response != "OK\n" {
 		log.Criticalf(
 			"action: send_bet | result: fail | client_id: %v | response: %v",
 			c.config.ID,
