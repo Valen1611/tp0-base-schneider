@@ -140,6 +140,16 @@ func (c *Client) SendBet() bool {
 	writer(c.conn, bet_msg)
 	log.Infof("waiting server response")
 	response, error := reader(c.conn)
+	if error != nil {
+		log.Criticalf(
+			"action: send_bet | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			error,
+		)
+		log.Critical("Closing socket")
+		c.conn.Close()
+		return false
+	}
 	log.Infof("response from server: %v", response)
 
 	log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",

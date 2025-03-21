@@ -94,7 +94,7 @@ class Server:
                 utils.store_bets([bet])
                 print("Bet: ", bet)
                 logging.info(f'action: apuesta_almacenada | result: success | dni: ${document} | numero: ${number}.')
-                client_sock.send("bet stored".encode('utf-8'))
+                client_sock.send("bet stored\n".encode('utf-8'))
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
