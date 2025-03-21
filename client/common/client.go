@@ -90,7 +90,10 @@ func (c *Client) SendBet() bool {
 
 	agency := c.config.ID
 
-	log.Infof("action: send_bet | result: success | client_id: %v | sending: %v", c.config.ID,bet_msg)
+	// Creo el mensaje de apuesta
+	bet_msg := GenerateBetMessage(agency, name, surname, documento, nacimiento, numero)
+
+	log.Infof("action: send_bet | result: success | client_id: %v | sending: %v", c.config.ID, bet_msg)
 	// Envio la apuesta al server
 	writer(c.conn, bet_msg)
 
