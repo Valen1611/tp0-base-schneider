@@ -8,7 +8,8 @@ import sys
 
 from common.utils import Bet
 from common import utils
-from common import protocol, socket_wrapper
+from common import socket_wrapper
+from common import bet_protocol
 
 class Server:
     def __init__(self, port, listen_backlog):
@@ -51,10 +52,10 @@ class Server:
             addr = client_sock.getpeername()
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
             # Me fijo que accion quiere hacer
-            action = protocol.get_action(msg)
+            action = bet_protocol.get_action(msg)
             if action == "BET":
                 # Leo la data de la apuesta
-                agency, name, surname, document, birthdate, number = protocol.read_bet_msg(msg)                
+                agency, name, surname, document, birthdate, number = bet_protocol.read_bet_msg(msg)                
                 bet = Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)
                 # Guardo la apuesta
                 utils.store_bets([bet])            

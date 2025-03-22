@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
 )
 
 var log = logging.MustGetLogger("log")
@@ -57,30 +58,6 @@ func (c *Client) createClientSocket() error {
 	return nil
 }
 
-func writer(conn net.Conn, msg string) error {
-	totalWritten := 0
-	msg += "\n" 
-    msgBytes := []byte(msg) 
-
-    for totalWritten < len(msgBytes) {
-        n, err := conn.Write(msgBytes[totalWritten:])
-        if err != nil {
-            return err
-        }
-        totalWritten += n
-    }
-
-    return nil
-}
-
-func reader(conn net.Conn) (string, error) {
-	msg, err := bufio.NewReader(conn).ReadString('\n')
-	if err != nil {
-		return "", err
-	}
-	fmt.Print(msg)
-	return msg, nil
-}
 
 func (c *Client) SendBet() bool {
 	// Levanto las variables de entorno
@@ -97,10 +74,10 @@ func (c *Client) SendBet() bool {
 	
 	// Envio la apuesta al server
 	c.createClientSocket()
-	writer(c.conn, bet_msg)
+	SocketWriter(c.conn, bet_msg)
 
 	// Espero confirmacion
-	response, error := reader(c.conn)
+	response, error := SocketReader(c.conn)
 	if error != nil {
 		log.Criticalf(
 			"action: send_bet | result: fail | client_id: %v | error: %v",
@@ -111,7 +88,7 @@ func (c *Client) SendBet() bool {
 		c.conn.Close()
 		return false
 	}
-	if response != "OK\n" {
+	if response != "OK" {
 		log.Criticalf(
 			"action: send_bet | result: fail | client_id: %v | response: %v",
 			c.config.ID,

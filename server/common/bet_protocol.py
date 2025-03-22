@@ -1,3 +1,14 @@
+
+"""
+Bet protocol:
+	- Accion
+	- Separador ':'
+	- Datos
+
+	Ejemplo:
+	BET:1,Santiago Lionel,Lorca,30904465,1999-03-17,7574
+"""
+
 def read_bet_msg(msg):
     bet_data = msg.split(":")[1].split(",")
     agency = bet_data[0]
@@ -11,3 +22,5 @@ def read_bet_msg(msg):
 
 def get_action(msg):
     return msg.split(":")[0]
+
+
