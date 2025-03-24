@@ -10,4 +10,4 @@
       - SERVER_NAME
     volumes:
       - ./client/config.yaml:/config.yaml
-      - .data/dataset/agency-CLIENT_NUM.csv:/databets.csv
+      - .data/dataset/agency-CLIENT_NUM.csv:/.data/agency-CLIENT_NUM.csv
