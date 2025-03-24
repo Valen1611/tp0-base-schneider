@@ -37,6 +37,7 @@ func InitConfig() (*viper.Viper, error) {
 	v.BindEnv("loop", "period")
 	v.BindEnv("loop", "amount")
 	v.BindEnv("log", "level")
+	v.BindEnv("batch.maxAmount")
 
 	// Try to read configuration from config file. If config file
 	// does not exists then ReadInConfig will fail but configuration
@@ -108,14 +109,15 @@ func main() {
 		ID:            v.GetString("id"),
 		LoopAmount:    v.GetInt("loop.amount"),
 		LoopPeriod:    v.GetDuration("loop.period"),
+		MaxAmount:     v.GetInt("batch.maxAmount"),
 	}
 
 	client := common.NewClient(clientConfig)
-	send_bet := client.SendBet()
+	send_bet := client.SendBatchBets()
 	if send_bet == false {
-		log.Critical("Send bet failed")
+		log.Critical("SendBatchBets failed")
 		return
 	}
-	log.Info("Send bet success")
+	log.Info("SendBatchBets success")
 	// client.StartClientLoop()
 }

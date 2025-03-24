@@ -2,7 +2,7 @@
 
 server_address="server"
 server_port="12345"
-msg="Hello World"
+msg="10Hello World"
 
 docker run --rm --network tp0_testing_net \
     -e server_port="$server_port" \

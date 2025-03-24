@@ -18,7 +18,7 @@ class Server:
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
 
-        self.clients = []
+        self.clients = {}
         self.seguir_conectando = True
 
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -36,8 +36,12 @@ class Server:
         # the server
         while self.seguir_conectando:
             client_sock = self.__accept_new_connection()            
-            self.clients.append(client_sock)
-            self.__handle_client_connection(client_sock)
+            self.clients[client_sock] = "TALKING"
+            
+            while self.clients[client_sock] == "TALKING":
+                self.__handle_client_connection(client_sock)
+            client_sock.close()
+            
 
     def __handle_client_connection(self, client_sock):
         """
@@ -53,6 +57,7 @@ class Server:
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
             # Me fijo que accion quiere hacer
             action = bet_protocol.get_action(msg)
+            print("accion: ", action)
             if action == "BET":
                 # Leo la data de la apuesta
                 agency, name, surname, document, birthdate, number = bet_protocol.read_bet_msg(msg)                
@@ -62,10 +67,40 @@ class Server:
                 logging.info(f'action: apuesta_almacenada | result: success | dni: {document} | numero: {number}.')
                 # Le confirmo al cliente que se guardo la apuesta
                 socket_wrapper.write_msg(client_sock, "OK")
+            elif action == "BATCH_BET":
+                try:
+                    # Leo la data de las apuestas
+                    bets = []
+                    for bet in msg.split(":")[1].split(";"):
+                        if not bet: 
+                            continue
+                        print("bet", bet)
+                        bet_data = bet.split(",")
+                        agency = int(bet_data[0])
+                        name = bet_data[1]
+                        surname = bet_data[2]
+                        document = int(bet_data[3])
+                        birthdate = bet_data[4]
+                        number = int(bet_data[5])
+
+                        bets.append(Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=int(number)))
+                    # Guardo las apuestas
+                    utils.store_bets(bets)
+                    logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}.')
+                    # Le confirmo al cliente que se guardaron las apuestas
+                    socket_wrapper.write_msg(client_sock, "OK")
+                except Exception as e:
+                    logging.error(f'action: apuesta_recibida | result: fail | cantidad: {len(bets)}.')
+            elif action == "FINISH":
+                logging.info(f'action: finalizar_conexion | result: success | ip: {addr[0]}')
+                self.clients[client_sock] = "FINISHED"
+                return False
+                
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:            
-            client_sock.close()
+            # client_sock.close()
+            return True
 
     def __accept_new_connection(self):
         """

@@ -4,6 +4,7 @@ package common
 import (
 	"net"
 	"encoding/binary"
+	"fmt"
 )
 
 
@@ -35,6 +36,8 @@ func SocketWriter(conn net.Conn, msg string) error {
 		bytesTotales += bytesEnviados
 	}
 
+	fmt.Println("Mensaje enviado: ", string(fullMsg))
+
     return nil
 }
 
@@ -50,13 +53,16 @@ func SocketReader(conn net.Conn) (string, error) {
 	for bytesLeidos < MSG_LEN_SIZE {
 		n, err := conn.Read(msgLenB[bytesLeidos:])
 		if err != nil {
+			fmt.Println("Error al leer el tamanio del mensaje")
+			fmt.Println(err)
+			fmt.Println("Bytes leidos: ", bytesLeidos)
 			return "", err
 		}
 		bytesLeidos += n
 		
 	}
 	msgLen := int(binary.BigEndian.Uint16(msgLenB))
-
+	fmt.Println("Tamanio del mensaje: ", msgLen)
 
 	// Ahora leo el mensaje completo
 	msg := make([]byte, msgLen)

@@ -4,16 +4,10 @@
     entrypoint: /CLIENT_NAME
     environment:
       - CLI_ID=CLIENT_NUM
-      - NOMBRE=Santiago Lionel
-      - APELLIDO=Lorca
-      - DOCUMENTO=30904465
-      - NACIMIENTO=1999-03-17
-      - NUMERO=7574
-      - HANDSHAKE_REQUEST_MESSAGE=HELLO_SERVER
-      - HANDSHAKE_RESPONSE_MESSAGE=HELLO_CLIENT
     networks:
       - testing_net
     depends_on:
       - SERVER_NAME
     volumes:
       - ./client/config.yaml:/config.yaml
+      - .data/dataset/agency-CLIENT_NUM.csv:/databets.csv
