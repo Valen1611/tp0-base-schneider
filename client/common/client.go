@@ -186,7 +186,6 @@ func (c *Client) SendBatchBets() bool {
 	c.createClientSocket()
 
 	for _, bets := range betBatches {
-		fmt.Println("bets")
 		msg := GenerateBatchBetMessage(bets)	
 		log.Infof("action: send_batch_bets | result: success | client_id: %v | sending: bets", c.config.ID)
 		// Envio la apuesta al server
@@ -212,7 +211,6 @@ func (c *Client) SendBatchBets() bool {
 			return false
 		}
 
-		fmt.Println("server response: ", response)
 
 		log.Infof("action: apuestas_enviadas | result: success | client_id: %v",
 				c.config.ID,

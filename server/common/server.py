@@ -57,7 +57,6 @@ class Server:
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: bets')
             # Me fijo que accion quiere hacer
             action = bet_protocol.get_action(msg)
-            print("accion: ", action)
             if action == "BET":
                 # Leo la data de la apuesta
                 agency, name, surname, document, birthdate, number = bet_protocol.read_bet_msg(msg)                

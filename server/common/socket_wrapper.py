@@ -19,7 +19,6 @@ def read_msg(socket):
     msg_len_b = b""
     while len(msg_len_b) < MSG_LEN_SIZE:
         bytes_leidos = socket.recv(MSG_LEN_SIZE - len(msg_len_b))
-        print(f"bytes_leidos: {bytes_leidos}")
         if not bytes_leidos:
             return None
         msg_len_b += bytes_leidos
