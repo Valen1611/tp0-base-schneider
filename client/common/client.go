@@ -109,7 +109,8 @@ func (c *Client) SendBet() bool {
 }
 
 func (c *Client) ReadBets(agency string) ([][]Bet, error) {
-	filePath := "databets.csv"
+
+	filePath := fmt.Sprintf(".data/agency-%s.csv", c.config.ID)
 	f, err := os.Open(filePath)
     if err != nil {
         log.Criticalf("Unable to read input file " + filePath, err)
