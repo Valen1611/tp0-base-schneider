@@ -54,7 +54,7 @@ class Server:
             # Espero a recibir mensaje de cliente
             msg = socket_wrapper.read_msg(client_sock)
             addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
+            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: bets')
             # Me fijo que accion quiere hacer
             action = bet_protocol.get_action(msg)
             print("accion: ", action)

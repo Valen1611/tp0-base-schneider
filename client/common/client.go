@@ -188,7 +188,7 @@ func (c *Client) SendBatchBets() bool {
 	for _, bets := range betBatches {
 		fmt.Println("bets")
 		msg := GenerateBatchBetMessage(bets)	
-		log.Infof("action: send_batch_bets | result: success | client_id: %v | sending: %v", c.config.ID, msg)
+		log.Infof("action: send_batch_bets | result: success | client_id: %v | sending: bets", c.config.ID)
 		// Envio la apuesta al server
 		SocketWriter(c.conn, msg)
 
