@@ -12,6 +12,8 @@ import (
 	"os/signal"
 	"syscall"
 	"encoding/csv"
+	"time"
+
 )
 
 var log = logging.MustGetLogger("log")
@@ -237,7 +239,7 @@ func (c *Client) SendBatchBets() bool {
 	ganadores := ParseWinnersMessage(response)
 	cant_ganadores := len(ganadores)
 	log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", cant_ganadores)
-	log.Infof("action: exit | result: success | client_id: %v", c.config.ID)
+	time.Sleep(100 * time.Millisecond)
 	return true
 }
 
