@@ -86,11 +86,11 @@ class Server:
                         bets.append(Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=int(number)))
                     # Guardo las apuestas
                     utils.store_bets(bets)
-                    logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}.')
+                    logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}')
                     # Le confirmo al cliente que se guardaron las apuestas
                     socket_wrapper.write_msg(client_sock, "OK")
                 except Exception as e:
-                    logging.error(f'action: apuesta_recibida | result: fail | cantidad: {len(bets)}.')
+                    logging.error(f'action: apuesta_recibida | result: fail | cantidad: {len(bets)}')
             elif action == "FINISH":
                 logging.info(f'action: finalizar_conexion | result: success | ip: {addr[0]}')
                 self.clients[client_sock] = "FINISHED"
