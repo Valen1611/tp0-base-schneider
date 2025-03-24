@@ -26,7 +26,7 @@ def read_msg(socket):
 
     msg_len = int.from_bytes(msg_len_b, byteorder="big")
 
-    print(f"msg_len: {msg_len}")
+
 
     # Ahora leo el mensaje completo
     msg = b""
@@ -35,8 +35,6 @@ def read_msg(socket):
         if not bytes_leidos:
             return None
         msg += bytes_leidos
-    print(f"msg: {msg.decode('utf-8')}")
-
 
     return msg.decode('utf-8')
 
@@ -48,8 +46,7 @@ def write_msg(socket, msg):
     full_msg = msg_length + encoded_msg
     # Lo mando envitand short-writes
     bytes_totales = 0
-    while bytes_totales < len(full_msg):
-        print("sending: ", full_msg[bytes_totales:])
+    while bytes_totales < len(full_msg):        
         bytes_enviados = socket.send(full_msg[bytes_totales:])
         if bytes_enviados == 0:
             raise RuntimeError("Socket broken")

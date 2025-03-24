@@ -73,8 +73,7 @@ class Server:
                     bets = []
                     for bet in msg.split(":")[1].split(";"):
                         if not bet: 
-                            continue
-                        print("bet", bet)
+                            continue                      
                         bet_data = bet.split(",")
                         agency = int(bet_data[0])
                         name = bet_data[1]
