@@ -221,6 +221,23 @@ func (c *Client) SendBatchBets() bool {
 
 	SocketWriter(c.conn, "FINISH:")
 
+	// Espero ganador
+	log.Infof("action: esperando_ganadores | result: success | client_id: %v", c.config.ID)
+	response, error := SocketReader(c.conn)
+	if error != nil {
+		log.Criticalf(
+			"action: read_bets | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			error,
+		)
+		return false
+	}
+
+	// Consulto ganadores
+	ganadores := ParseWinnersMessage(response)
+	cant_ganadores := len(ganadores)
+	log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", cant_ganadores)
+
 	return true
 }
 

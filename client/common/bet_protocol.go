@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"strings"
 )
 
 
@@ -17,6 +18,9 @@ import (
 // 	Ejemplo:
 // 	BET:1,Santiago Lionel,Lorca,30904465,1999-03-17,7574;2,Juan,Perez,111111,2001-09-20,2938
 
+// En Winners, cada ganador separado por ,
+// 	Ejemplo:
+// 	WINNERS:1,2,3,4,5
 
 
 type Bet struct {
@@ -58,4 +62,23 @@ func GenerateBatchBetMessage(bets []Bet) string {
 		)
 	}
 	return message
+}
+
+func ParseWinnersMessage(message string) []string {
+
+	isWinnerMessage := strings.HasPrefix(message, "WINNERS")
+
+	if !isWinnerMessage {
+		return nil
+	}
+
+	winners := []string{}
+	messageData := strings.Split(message, ":")[1]
+
+	for _, winner := range strings.Split(messageData, ",") {
+		winners = append(winners, strings.TrimSpace(winner))
+	}
+
+
+	return winners
 }

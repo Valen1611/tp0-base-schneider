@@ -11,6 +11,7 @@ from common import utils
 from common import socket_wrapper
 from common import bet_protocol
 
+TOTAL_CLIENTS = 2
 class Server:
     def __init__(self, port, listen_backlog):
         # Initialize server socket
@@ -19,6 +20,7 @@ class Server:
         self._server_socket.listen(listen_backlog)
 
         self.clients = {}
+        self.clients_ids = {}
         self.seguir_conectando = True
 
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -34,14 +36,40 @@ class Server:
 
         # TODO: Modify this program to handle signal to graceful shutdown
         # the server
+        clients_waiting = 0
         while self.seguir_conectando:
             client_sock = self.__accept_new_connection()            
             self.clients[client_sock] = "TALKING"
             
             while self.clients[client_sock] == "TALKING":
                 self.__handle_client_connection(client_sock)
-            client_sock.close()
+
+            if self.clients[client_sock] == "WAITING":
+                clients_waiting += 1
+
+            if clients_waiting == TOTAL_CLIENTS:
+                self.hacer_sorteo()
+                clients_waiting = 0
             
+    def hacer_sorteo(self):
+        logging.info("action: sorteo | result: success")
+
+        bets = utils.load_bets()
+        winners = {agency : [] for agency in self.clients_ids.keys()}
+        for bet in bets:
+            if utils.has_won(bet):
+                logging.info(f"action: apuesta_ganadora | result: success | dni: {bet.document} | numero: {bet.number}")
+                winners[bet.agency].append(bet)
+        self.notify_winners(winners)
+
+    def notify_winners(self, winners):
+        for agency, bets in winners.items():
+            client_sock = self.clients_ids[agency]
+            winners_dnis = [str(bet.document) for bet in bets]
+            socket_wrapper.write_msg(client_sock, f"WINNERS:{','.join(winners_dnis)}")
+
+        # client_sock = self.clients_ids[bet.agency]
+        # socket_wrapper.write_msg(client_sock, f"WIN:{bet.number}")            
 
     def __handle_client_connection(self, client_sock):
         """
@@ -60,7 +88,7 @@ class Server:
             if action == "BET":
                 # Leo la data de la apuesta
                 agency, name, surname, document, birthdate, number = bet_protocol.read_bet_msg(msg)                
-                bet = Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)
+                bet = Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)            
                 # Guardo la apuesta
                 utils.store_bets([bet])            
                 logging.info(f'action: apuesta_almacenada | result: success | dni: {document} | numero: {number}.')
@@ -84,6 +112,7 @@ class Server:
                         bets.append(Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=int(number)))
                     # Guardo las apuestas
                     utils.store_bets(bets)
+                    self.clients_ids[bets[0].agency] = client_sock
                     logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}')
                     # Le confirmo al cliente que se guardaron las apuestas
                     socket_wrapper.write_msg(client_sock, "OK")
@@ -91,7 +120,7 @@ class Server:
                     logging.error(f'action: apuesta_recibida | result: fail | cantidad: {len(bets)}')
             elif action == "FINISH":
                 logging.info(f'action: finalizar_conexion | result: success | ip: {addr[0]}')
-                self.clients[client_sock] = "FINISHED"
+                self.clients[client_sock] = "WAITING"
                 return False
                 
         except OSError as e:
