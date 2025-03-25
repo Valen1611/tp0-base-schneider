@@ -12,7 +12,6 @@ import (
 	"os/signal"
 	"syscall"
 	"encoding/csv"
-	"time"
 
 )
 
@@ -239,7 +238,7 @@ func (c *Client) SendBatchBets() bool {
 	ganadores := ParseWinnersMessage(response)
 	cant_ganadores := len(ganadores)
 	log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", cant_ganadores)
-	time.Sleep(100 * time.Millisecond)
+	// time.Sleep(100 * time.Millisecond)
 	return true
 }
 
