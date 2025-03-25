@@ -22,7 +22,6 @@ class Server:
         self.clients = {}
         self.clients_ids = {}
         self.seguir_conectando = True
-        print(f"CLIENTS_AMOUNT: {TOTAL_CLIENTS}")
         signal.signal(signal.SIGTERM, self.signal_handler)
 
     def run(self):
@@ -38,6 +37,11 @@ class Server:
         # the server
         clients_waiting = 0
         while self.seguir_conectando:
+            if clients_waiting == int(TOTAL_CLIENTS):
+                print("entonces?")
+                self.hacer_sorteo()
+                clients_waiting = 0
+            
             client_sock = self.__accept_new_connection()            
             self.clients[client_sock] = "TALKING"
             
@@ -47,9 +51,6 @@ class Server:
             if self.clients[client_sock] == "WAITING":
                 clients_waiting += 1
 
-            if clients_waiting == TOTAL_CLIENTS:
-                self.hacer_sorteo()
-                clients_waiting = 0
             
     def hacer_sorteo(self):
         logging.info("action: sorteo | result: success")
