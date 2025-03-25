@@ -74,11 +74,14 @@ func ParseWinnersMessage(message string) []string {
 
 	winners := []string{}
 	messageData := strings.Split(message, ":")[1]
-
+	
+	if messageData == "" {
+		return []string{} 
+	}
+	
 	for _, winner := range strings.Split(messageData, ",") {
 		winners = append(winners, strings.TrimSpace(winner))
 	}
-
 
 	return winners
 }
