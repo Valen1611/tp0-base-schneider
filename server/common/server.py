@@ -37,8 +37,7 @@ class Server:
         # the server
         clients_waiting = 0
         while self.seguir_conectando:
-            if clients_waiting == int(TOTAL_CLIENTS):
-                print("entonces?")
+            if clients_waiting == int(TOTAL_CLIENTS):                
                 self.hacer_sorteo()
                 clients_waiting = 0
             

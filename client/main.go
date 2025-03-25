@@ -118,6 +118,8 @@ func main() {
 		log.Critical("SendBatchBets failed")
 		return
 	}
+	sleep_time := time.Duration(3) * time.Second
+	time.Sleep(sleep_time)
 	log.Info("SendBatchBets success")
 	// client.StartClientLoop()
 }
