@@ -10,7 +10,7 @@ Sockets protocol:
     02OK
 """
 
-MSG_LEN_SIZE = 5
+MSG_LEN_SIZE = 2
 
 
 def read_msg(socket):

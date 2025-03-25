@@ -11,7 +11,7 @@ from common import utils
 from common import socket_wrapper
 from common import bet_protocol
 
-TOTAL_CLIENTS = 2
+TOTAL_CLIENTS = 3
 class Server:
     def __init__(self, port, listen_backlog):
         # Initialize server socket
