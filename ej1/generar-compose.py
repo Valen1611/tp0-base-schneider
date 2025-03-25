@@ -9,13 +9,14 @@ RUTA_NETWORK = "ej1/network.yaml"
 SERVER_NAME = "server"
 CLIENT_NAME = "client"
 
-def get_file_content():
+def get_file_content(cant_clientes):
     with open(RUTA_HEADER, "r") as archivo:
         header = archivo.read()
 
     with open(RUTA_SERVER, "r") as archivo:
         server = archivo.read()
     server = server.replace("server", SERVER_NAME)
+    server = server.replace("CANT_CLIENTS", cant_clientes)
 
     with open(RUTA_CLIENT, "r") as archivo:
         client = archivo.read()
@@ -46,7 +47,7 @@ def main():
     cant_clientes = args[1]
 
     # Levanto los archivos que tienen la estructura del output
-    header, server, client, networks = get_file_content()
+    header, server, client, networks = get_file_content(cant_clientes)
 
     # Guardo el yaml el output
     generate_yaml(header, server, client, networks, ruta_archivo_salida, cant_clientes)
