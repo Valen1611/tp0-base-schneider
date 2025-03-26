@@ -11,6 +11,8 @@ from common import utils
 from common import socket_wrapper
 from common import bet_protocol
 
+import multiprocessing
+
 TOTAL_CLIENTS = os.getenv("CLIENTS_AMOUNT", 1)
 class Server:
     def __init__(self, port, listen_backlog):
@@ -20,8 +22,14 @@ class Server:
         self._server_socket.listen(listen_backlog)
 
         self.clients = {}
-        self.clients_ids = {}
         self.seguir_conectando = True
+
+        self.manager = multiprocessing.Manager()
+        self.clients_ids = self.manager.dict()
+        self.clients_waiting = self.manager.Value('i', 0)
+        self.lock = self.manager.Lock()
+        self.procesos = []
+
         signal.signal(signal.SIGTERM, self.signal_handler)
 
     def run(self):
@@ -35,21 +43,18 @@ class Server:
 
         # TODO: Modify this program to handle signal to graceful shutdown
         # the server
-        clients_waiting = 0
+        
         while self.seguir_conectando:
-            if clients_waiting == int(TOTAL_CLIENTS):                
-                self.hacer_sorteo()
-                clients_waiting = 0
+            # if self.clients_waiting.value == int(TOTAL_CLIENTS):                
+            #     self.hacer_sorteo()
+                
             
             client_sock = self.__accept_new_connection()            
             self.clients[client_sock] = "TALKING"
+            proceso = multiprocessing.Process(target=self.__handle_client_connection, args=(client_sock,))
+            proceso.start()
+            self.procesos.append(proceso)
             
-            while self.clients[client_sock] == "TALKING":
-                self.__handle_client_connection(client_sock)
-
-            if self.clients[client_sock] == "WAITING":
-                clients_waiting += 1
-
             
     def hacer_sorteo(self):
         logging.info("action: sorteo | result: success")
@@ -60,6 +65,7 @@ class Server:
             if utils.has_won(bet):
                 logging.info(f"action: apuesta_ganadora | result: success | dni: {bet.document} | numero: {bet.number}")
                 winners[bet.agency].append(bet)
+                print("la quedo aca??", winners)
         self.notify_winners(winners)
 
     def notify_winners(self, winners):
@@ -79,49 +85,59 @@ class Server:
         client socket will also be closed
         """
         try:            
-            # Espero a recibir mensaje de cliente
-            msg = socket_wrapper.read_msg(client_sock)
-            addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: bets')
-            # Me fijo que accion quiere hacer
-            action = bet_protocol.get_action(msg)
-            if action == "BET":
-                # Leo la data de la apuesta
-                agency, name, surname, document, birthdate, number = bet_protocol.read_bet_msg(msg)                
-                bet = Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)            
-                # Guardo la apuesta
-                utils.store_bets([bet])            
-                logging.info(f'action: apuesta_almacenada | result: success | dni: {document} | numero: {number}.')
-                # Le confirmo al cliente que se guardo la apuesta
-                socket_wrapper.write_msg(client_sock, "OK")
-            elif action == "BATCH_BET":
-                try:
-                    # Leo la data de las apuestas
-                    bets = []
-                    for bet in msg.split(":")[1].split(";"):
-                        if not bet: 
-                            continue                      
-                        bet_data = bet.split(",")
-                        agency = int(bet_data[0])
-                        name = bet_data[1]
-                        surname = bet_data[2]
-                        document = int(bet_data[3])
-                        birthdate = bet_data[4]
-                        number = int(bet_data[5])
-
-                        bets.append(Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=int(number)))
-                    # Guardo las apuestas
-                    utils.store_bets(bets)
-                    self.clients_ids[bets[0].agency] = client_sock
-                    logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}')
-                    # Le confirmo al cliente que se guardaron las apuestas
+            while True:
+                # Espero a recibir mensaje de cliente
+                msg = socket_wrapper.read_msg(client_sock)
+                addr = client_sock.getpeername()
+                logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: bets')
+                # Me fijo que accion quiere hacer
+                action = bet_protocol.get_action(msg)
+                if action == "BET":
+                    # Leo la data de la apuesta
+                    agency, name, surname, document, birthdate, number = bet_protocol.read_bet_msg(msg)                
+                    bet = Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)            
+                    # Guardo la apuesta
+                    utils.store_bets([bet])            
+                    logging.info(f'action: apuesta_almacenada | result: success | dni: {document} | numero: {number}.')
+                    # Le confirmo al cliente que se guardo la apuesta
                     socket_wrapper.write_msg(client_sock, "OK")
-                except Exception as e:
-                    logging.error(f'action: apuesta_recibida | result: fail | cantidad: {len(bets)}')
-            elif action == "FINISH":
-                logging.info(f'action: finalizar_conexion | result: success | ip: {addr[0]}')
-                self.clients[client_sock] = "WAITING"
-                return False
+                    continue
+                elif action == "BATCH_BET":
+                    try:
+                        # Leo la data de las apuestas
+                        bets = []
+                        for bet in msg.split(":")[1].split(";"):
+                            if not bet: 
+                                continue                      
+                            bet_data = bet.split(",")
+                            agency = int(bet_data[0])
+                            name = bet_data[1]
+                            surname = bet_data[2]
+                            document = int(bet_data[3])
+                            birthdate = bet_data[4]
+                            number = int(bet_data[5])
+
+                            bets.append(Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=int(number)))
+                        # Guardo las apuestas
+                        utils.store_bets(bets)
+                        self.clients_ids[bets[0].agency] = client_sock
+                        logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}')
+                        # Le confirmo al cliente que se guardaron las apuestas
+                        socket_wrapper.write_msg(client_sock, "OK")
+                        continue
+                    except Exception as e:
+                        logging.error(f'action: apuesta_recibida | result: fail | cantidad: {len(bets)}')
+                        break
+                elif action == "FINISH":
+                    logging.info(f'action: finalizar_conexion | result: success | ip: {addr[0]}')
+                    self.clients[client_sock] = "WAITING"
+                    with self.lock:
+                        print("recibi FINISH, aumento contador: ", self.clients_waiting.value)
+                        self.clients_waiting.value += 1
+                        if self.clients_waiting.value == int(TOTAL_CLIENTS):
+                            print("Haciendo sorteo")
+                            self.hacer_sorteo()
+                    break
                 
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
