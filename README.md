@@ -178,3 +178,23 @@ Se espera que se redacte una sección del README en donde se indique cómo ejecu
 Se proveen [pruebas automáticas](https://github.com/7574-sistemas-distribuidos/tp0-tests) de caja negra. Se exige que la resolución de los ejercicios pase tales pruebas, o en su defecto que las discrepancias sean justificadas y discutidas con los docentes antes del día de la entrega. El incumplimiento de las pruebas es condición de desaprobación, pero su cumplimiento no es suficiente para la aprobación. Respetar las entradas de log planteadas en los ejercicios, pues son las que se chequean en cada uno de los tests.
 
 La corrección personal tendrá en cuenta la calidad del código entregado y casos de error posibles, se manifiesten o no durante la ejecución del trabajo práctico. Se pide a los alumnos leer atentamente y **tener en cuenta** los criterios de corrección informados  [en el campus](https://campusgrado.fi.uba.ar/mod/page/view.php?id=73393).
+
+## Cambios realizados para el ej5
+
+### Correr el programa
+Para poder correr el programas y ver los logs del cliente y server mas facilmente, agregue comandos en el makefile. Con make reboot-client y make reboot-server se pueden levantar los containers de cada uno y ver los logs. En caso de que falle el comando se debe hacer make docker-image para volver a buildear la imagen, ya que el comando intenta eliminarla y volver a crearla. Si no se desea rebuildear, estan los comandos make quick-run-server y make quick-run-client que solamente levantan los containers.
+make reboot-client solo levanta client1, no sirve para mas de un cliente. En ese caso si hay que rebuildear mas "a mano".
+
+### Protocolo
+
+El protocolo de mensajes esta pensado en dos partes, por un lado los sockets, y por otro lado la logica de negocio del problema.
+Sobre los sockets, las funciones reader y writer de cliente y servidor lo que hacen es tomar los primeros 2 bytes para escriir/leer el tamanio del mensaje a enviar, y luego leer/escribir esta cantidad de bytes. En caso de no haber llegar, reintentar hasta llegar al tamanio necesario. De esta forma se asegura que se lee la cantidad de bytes correcta, evitando short reads y short writes.
+
+Por el lado del negocio, el formato de los mensajes es ACCION:DATOS. Los datos separados por coma.
+El mensaje de una apuesta entonces, seria "BET:nombre,apellido,dni,nacimiento,numero".
+
+
+### Comunicacion
+
+El flujo de mensajes entre el cliente y el servidor es muy simple. Cuando un cliente se conecta, envia el mensaje con la apuesta, y el servidor lo recibe y lo almacena. Luego de recibir el mensaje, el servidor responde con un mensaje de confirmacion. El cliente se queda esperando a recibir esta confirmacion, y una vez que la recibe, imprime un mensaje de exito (o de fallo en caso de que haya habido un error).
+
