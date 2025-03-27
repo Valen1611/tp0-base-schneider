@@ -45,10 +45,6 @@ class Server:
         # the server
         
         while self.seguir_conectando:
-            # if self.clients_waiting.value == int(TOTAL_CLIENTS):                
-            #     self.hacer_sorteo()
-                
-            
             client_sock = self.__accept_new_connection()            
             self.clients[client_sock] = "TALKING"
             proceso = multiprocessing.Process(target=self.__handle_client_connection, args=(client_sock,))
@@ -65,7 +61,6 @@ class Server:
             if utils.has_won(bet):
                 logging.info(f"action: apuesta_ganadora | result: success | dni: {bet.document} | numero: {bet.number}")
                 winners[bet.agency].append(bet)
-                print("la quedo aca??", winners)
         self.notify_winners(winners)
 
     def notify_winners(self, winners):
@@ -167,4 +162,6 @@ class Server:
             print(f"Cerrando cliente {client}")
             client.close()
         self._server_socket.close()
+        for process in self.procesos:
+            process.join()
         sys.exit(0)
