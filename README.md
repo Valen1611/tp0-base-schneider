@@ -178,3 +178,30 @@ Se espera que se redacte una sección del README en donde se indique cómo ejecu
 Se proveen [pruebas automáticas](https://github.com/7574-sistemas-distribuidos/tp0-tests) de caja negra. Se exige que la resolución de los ejercicios pase tales pruebas, o en su defecto que las discrepancias sean justificadas y discutidas con los docentes antes del día de la entrega. El incumplimiento de las pruebas es condición de desaprobación, pero su cumplimiento no es suficiente para la aprobación. Respetar las entradas de log planteadas en los ejercicios, pues son las que se chequean en cada uno de los tests.
 
 La corrección personal tendrá en cuenta la calidad del código entregado y casos de error posibles, se manifiesten o no durante la ejecución del trabajo práctico. Se pide a los alumnos leer atentamente y **tener en cuenta** los criterios de corrección informados  [en el campus](https://campusgrado.fi.uba.ar/mod/page/view.php?id=73393).
+
+## Cambios realizados para el ej8
+
+### Correr el programa
+Para poder correr el programas y ver los logs del cliente y server mas facilmente, agregue comandos en el makefile. Con make reboot-client y make reboot-server se pueden levantar los containers de cada uno y ver los logs. En caso de que falle el comando se debe hacer make docker-image para volver a buildear la imagen, ya que el comando intenta eliminarla y volver a crearla. Si no se desea rebuildear, estan los comandos make quick-run-server y make quick-run-client que solamente levantan los containers.
+make reboot-client solo levanta client1, no sirve para mas de un cliente. En ese caso si hay que rebuildear mas "a mano".
+
+### Protocolo
+
+El protocolo de mensajes esta pensado en dos partes, por un lado los sockets, y por otro lado la logica de negocio del problema.
+Sobre los sockets, las funciones reader y writer de cliente y servidor lo que hacen es tomar los primeros 2 bytes para escriir/leer el tamanio del mensaje a enviar, y luego leer/escribir esta cantidad de bytes. En caso de no haber llegar, reintentar hasta llegar al tamanio necesario. De esta forma se asegura que se lee la cantidad de bytes correcta, evitando short reads y short writes.
+
+Por el lado del negocio, el formato de los mensajes es ACCION:DATOS. Los datos separados por coma.
+El mensaje de una apuesta entonces, seria "BET:nombre,apellido,dni,nacimiento,numero".
+
+Para el caso de enviar multiples apuestas, los datos de cada persona se separan por punto y coma. El mensaje es: "BATCH_BET:nombre1,apellido1,dni1,nacimiento1,numero1;nombre2,apellido2,dni2,nacimiento2,numero2;...;nombreN,apellidoN,dniN,nacimientoN,numeroN".
+
+Para el caso del mensaje con los ganadores, la estructura es WINNERS:dni1,dni2,dni3,...,dniN.
+
+### Comunicacion y Concurrencia
+
+Para el cliente, la logica es la misma que se viene manteniendo en puntos anterores. Se conecta y empieza a enviar las apuestas. Para esto, envia todas las apuestas que pueda en un batch, mientras sigan quedando apuestas, las sigue enviando en batches. Envia un batch, espera el OK del server, y continua enviando. Una vez que finaliza, envia un mensaje FINISH al server. Y ahora en este ejercicio, consulta la lista de ganadores. Envia FINISH y se queda esperando a recibir los resultados.
+
+Para el server, ahora, la diferencia esta en que para recibir multiples mensajes a la vez, cada vez que se conecta un cliente se crea un proceso para manejar la comunicacion. Mientras se envian mensajes, es la misma logica de siempre, recibe BATCH_BETs, confirma, y eventualmente recibe un FINISH. Ahora cuando recibe un finish, cada proceso se encarga de avisar que ya termino, modificando una variable compartida por todos que indica cuantos procesos ya recibieron el finish. La sincronizacion de esto se hace con un lock.
+Cuando se toma este lock, se aumenta la variable y ademas se verifica si ya estan todos los procesos listos. Esa condicion solo va a ser verdadera para el ultimo proceso, entonces, cuando se cumpla, realiza el sorteo y envia los resultados a todos los clientes.
+Para poder enviar los resultados, tambien se comparten los sockets de los clientes, y se envia el mensaje a cada uno. En este punto del programa, todos los procesos (menos el ultimo) van a haber dejado de usar el socket, asi que no habria problemas de sincronizacion.
+
