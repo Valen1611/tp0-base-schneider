@@ -28,6 +28,7 @@ class Server:
         self.clients_ids = self.manager.dict()
         self.clients_waiting = self.manager.Value('i', 0)
         self.lock = self.manager.Lock()
+        self.bets_file_lock = self.manager.Lock()
         self.procesos = []
 
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -54,8 +55,8 @@ class Server:
             
     def hacer_sorteo(self):
         logging.info("action: sorteo | result: success")
-
-        bets = utils.load_bets()
+        with self.bets_file_lock:
+            bets = utils.load_bets()
         winners = {agency : [] for agency in self.clients_ids.keys()}
         for bet in bets:
             if utils.has_won(bet):
