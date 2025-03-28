@@ -55,8 +55,7 @@ class Server:
             
     def hacer_sorteo(self):
         logging.info("action: sorteo | result: success")
-        with self.bets_file_lock:
-            bets = utils.load_bets()
+        bets = utils.load_bets()
         winners = {agency : [] for agency in self.clients_ids.keys()}
         for bet in bets:
             if utils.has_won(bet):
@@ -93,7 +92,8 @@ class Server:
                     agency, name, surname, document, birthdate, number = bet_protocol.read_bet_msg(msg)                
                     bet = Bet(agency=agency, first_name=name, last_name=surname, document=document, birthdate=birthdate, number=number)            
                     # Guardo la apuesta
-                    utils.store_bets([bet])            
+                    with self.bets_file_lock:
+                        utils.store_bets([bet])            
                     logging.info(f'action: apuesta_almacenada | result: success | dni: {document} | numero: {number}.')
                     # Le confirmo al cliente que se guardo la apuesta
                     socket_wrapper.write_msg(client_sock, "OK")
