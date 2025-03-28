@@ -205,3 +205,6 @@ Para el server, ahora, la diferencia esta en que para recibir multiples mensajes
 Cuando se toma este lock, se aumenta la variable y ademas se verifica si ya estan todos los procesos listos. Esa condicion solo va a ser verdadera para el ultimo proceso, entonces, cuando se cumpla, realiza el sorteo y envia los resultados a todos los clientes.
 Para poder enviar los resultados, tambien se comparten los sockets de los clientes, y se envia el mensaje a cada uno. En este punto del programa, todos los procesos (menos el ultimo) van a haber dejado de usar el socket, asi que no habria problemas de sincronizacion.
 
+#### MaxAmount de Batches
+
+El valor de MaxAmount default es 150. Con este valor, los paquetes nunca pesan mas de 8kB. Esto se puede ver revisando el largo de los mensajes enviados desde el cliente. El analisis es simple de hacer ya que con el encodeo utilizado 1 caracter equivale a 1 byte.
